@@ -72,6 +72,17 @@ function updateHistoryMaba(id, value) {
   }
 }
 
+function deleteHistoryEntry(id) {
+  const history = loadHistory().filter((h) => h.id !== id);
+  saveHistory(history);
+  renderHistory();
+}
+
+function clearAllHistory() {
+  saveHistory([]);
+  renderHistory();
+}
+
 function formatHistoryDate(iso) {
   try {
     return new Date(iso).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
@@ -84,21 +95,27 @@ function renderHistory() {
   const history = loadHistory().sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
   const listEl = document.getElementById("history-list");
   const emptyEl = document.getElementById("history-empty");
+  const clearBtn = document.getElementById("clear-history-btn");
 
   if (history.length === 0) {
     emptyEl.hidden = false;
+    clearBtn.hidden = true;
     listEl.innerHTML = "";
     return;
   }
 
   emptyEl.hidden = true;
+  clearBtn.hidden = false;
   listEl.innerHTML = history
     .map(
       (h) => `
       <li class="history-item">
         <div class="history-item__meta">
           <span class="history-item__name">${escapeHtml(h.panitiaName)}</span>
-          <span class="history-item__date">${escapeHtml(formatHistoryDate(h.timestamp))}</span>
+          <div class="history-item__meta-right">
+            <span class="history-item__date">${escapeHtml(formatHistoryDate(h.timestamp))}</span>
+            <button type="button" class="history-item__delete" data-id="${h.id}" aria-label="Hapus histori ini" title="Hapus histori ini">&times;</button>
+          </div>
         </div>
         <p class="history-item__challenge">${escapeHtml(h.challenge)}</p>
         <label class="history-item__maba-label" for="maba-${h.id}">Nama Maba</label>
@@ -122,6 +139,14 @@ function renderHistory() {
       }, 300);
     });
   });
+
+  listEl.querySelectorAll(".history-item__delete").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (confirm("Hapus histori roll ini? Tindakan ini tidak bisa dibatalkan.")) {
+        deleteHistoryEntry(btn.dataset.id);
+      }
+    });
+  });
 }
 
 function init() {
@@ -130,6 +155,12 @@ function init() {
   searchInput.addEventListener("keydown", handleKeydown);
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".picker")) closeDropdown();
+  });
+
+  document.getElementById("clear-history-btn").addEventListener("click", () => {
+    if (confirm("Hapus SEMUA histori roll di device ini? Tindakan ini tidak bisa dibatalkan.")) {
+      clearAllHistory();
+    }
   });
 
   // cek apakah device ini sudah pernah pilih nama sebelumnya
