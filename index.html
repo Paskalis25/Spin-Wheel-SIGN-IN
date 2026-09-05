@@ -49,7 +49,10 @@
     <section class="panel" id="panel" hidden></section>
 
     <section class="history-section">
-      <h2 class="history-title">Histori Roll</h2>
+      <div class="history-header">
+        <h2 class="history-title">Histori Roll <span class="history-title__note">(device ini)</span></h2>
+        <button type="button" class="history-clear-btn" id="clear-history-btn" hidden>Hapus Semua</button>
+      </div>
       <p class="history-empty" id="history-empty">Belum ada histori roll di device ini.</p>
       <ul class="history-list" id="history-list"></ul>
     </section>
