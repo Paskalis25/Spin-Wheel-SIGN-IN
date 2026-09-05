@@ -8,6 +8,7 @@ const panelEl = document.getElementById("panel");
 const emptyStateEl = document.getElementById("empty-state");
 
 const STORAGE_KEY = "spinChallengeState";
+const HISTORY_KEY = "spinChallengeHistory";
 
 let activePanitia = null;
 let isRolling = false;
@@ -31,6 +32,98 @@ function loadState() {
   }
 }
 
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveHistory(history) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (e) {
+    // localStorage tidak tersedia - abaikan saja
+  }
+}
+
+function addHistoryEntry(panitiaName, challengeText) {
+  const history = loadHistory();
+  history.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    panitiaName,
+    challenge: challengeText,
+    maba: "",
+    timestamp: new Date().toISOString(),
+  });
+  saveHistory(history);
+  renderHistory();
+}
+
+function updateHistoryMaba(id, value) {
+  const history = loadHistory();
+  const entry = history.find((h) => h.id === id);
+  if (entry) {
+    entry.maba = value;
+    saveHistory(history);
+  }
+}
+
+function formatHistoryDate(iso) {
+  try {
+    return new Date(iso).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+  } catch (e) {
+    return iso;
+  }
+}
+
+function renderHistory() {
+  const history = loadHistory().sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
+  const listEl = document.getElementById("history-list");
+  const emptyEl = document.getElementById("history-empty");
+
+  if (history.length === 0) {
+    emptyEl.hidden = false;
+    listEl.innerHTML = "";
+    return;
+  }
+
+  emptyEl.hidden = true;
+  listEl.innerHTML = history
+    .map(
+      (h) => `
+      <li class="history-item">
+        <div class="history-item__meta">
+          <span class="history-item__name">${escapeHtml(h.panitiaName)}</span>
+          <span class="history-item__date">${escapeHtml(formatHistoryDate(h.timestamp))}</span>
+        </div>
+        <p class="history-item__challenge">${escapeHtml(h.challenge)}</p>
+        <label class="history-item__maba-label" for="maba-${h.id}">Nama Maba</label>
+        <input
+          type="text"
+          class="history-item__maba-input"
+          id="maba-${h.id}"
+          data-id="${h.id}"
+          placeholder="Isi nama maba yang kena challenge ini"
+          value="${escapeHtml(h.maba || "")}"
+        />
+      </li>`
+    )
+    .join("");
+
+  listEl.querySelectorAll(".history-item__maba-input").forEach((input) => {
+    input.addEventListener("input", () => {
+      clearTimeout(input._saveTimer);
+      input._saveTimer = setTimeout(() => {
+        updateHistoryMaba(input.dataset.id, input.value);
+      }, 300);
+    });
+  });
+}
+
 function init() {
   searchInput.addEventListener("focus", () => openDropdown(searchInput.value));
   searchInput.addEventListener("input", () => openDropdown(searchInput.value));
@@ -50,6 +143,8 @@ function init() {
       renderPanel(saved.resultIndex);
     }
   }
+
+  renderHistory();
 }
 
 function getMatches(query) {
@@ -233,15 +328,19 @@ function handleRoll() {
     searchInput.disabled = false;
 
     saveState(activePanitia.name, index);
+    addHistoryEntry(activePanitia.name, finalText);
   }
 
   step();
 }
 
 function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 init();
