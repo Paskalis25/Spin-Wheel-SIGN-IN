@@ -7,10 +7,29 @@ const dropdownEl = document.getElementById("dropdown-list");
 const panelEl = document.getElementById("panel");
 const emptyStateEl = document.getElementById("empty-state");
 
+const STORAGE_KEY = "spinChallengeState";
+
 let activePanitia = null;
 let isRolling = false;
 let highlightedIndex = -1;
 let visibleMatches = [];
+
+function saveState(name, resultIndex) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, resultIndex }));
+  } catch (e) {
+    // localStorage tidak tersedia (mis. private browsing) - abaikan saja
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
 
 function init() {
   searchInput.addEventListener("focus", () => openDropdown(searchInput.value));
@@ -19,6 +38,18 @@ function init() {
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".picker")) closeDropdown();
   });
+
+  // cek apakah device ini sudah pernah pilih nama sebelumnya
+  const saved = loadState();
+  if (saved && saved.name) {
+    const match = PANITIA.find((p) => p.name === saved.name);
+    if (match) {
+      activePanitia = match;
+      searchInput.value = match.name;
+      emptyStateEl.hidden = true;
+      renderPanel(saved.resultIndex);
+    }
+  }
 }
 
 function getMatches(query) {
@@ -97,10 +128,11 @@ function selectPanitia(panitia) {
   closeDropdown();
 
   emptyStateEl.hidden = true;
-  renderPanel();
+  saveState(panitia.name, null);
+  renderPanel(null);
 }
 
-function renderPanel() {
+function renderPanel(existingResultIndex) {
   panelEl.hidden = false;
   panelEl.innerHTML = `
     <div class="ticket">
@@ -126,6 +158,26 @@ function renderPanel() {
   `;
 
   document.getElementById("roll-btn").addEventListener("click", handleRoll);
+
+  // kalau sebelumnya sudah pernah roll di device ini, langsung tampilkan lagi hasilnya
+  if (existingResultIndex !== null && existingResultIndex !== undefined) {
+    showSavedResult(existingResultIndex);
+  }
+}
+
+function showSavedResult(index) {
+  const resultEl = document.getElementById("result");
+  const btn = document.getElementById("roll-btn");
+  const finalText = activePanitia.challenges[index];
+  if (finalText === undefined) return;
+
+  resultEl.innerHTML = `<span class="ticket__result-text">${escapeHtml(finalText)}</span>`;
+  resultEl.classList.add("ticket__result--done");
+
+  const picked = document.querySelector(`#challenge-list li[data-index="${index}"]`);
+  if (picked) picked.classList.add("is-picked");
+
+  btn.textContent = "Roll Ulang";
 }
 
 function handleRoll() {
@@ -179,6 +231,8 @@ function handleRoll() {
     btn.textContent = "Roll Ulang";
     isRolling = false;
     searchInput.disabled = false;
+
+    saveState(activePanitia.name, index);
   }
 
   step();
