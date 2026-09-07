@@ -2,6 +2,18 @@
 // LOGIC: roster panitia + mekanisme roll challenge
 // =========================================================
 
+// Decode data panitia yang disamarkan (base64) di js/data.js.
+// Ini BUKAN enkripsi sungguhan, cuma menyamarkan supaya orang yang
+// buka "View Source" tidak langsung lihat teks challenge polos.
+function decodeBase64Utf8(b64) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+const PANITIA = JSON.parse(decodeBase64Utf8(ENCODED_PANITIA));
+
 const searchInput = document.getElementById("search-input");
 const dropdownEl = document.getElementById("dropdown-list");
 const panelEl = document.getElementById("panel");
