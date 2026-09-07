@@ -27,7 +27,7 @@ const PANITIA = [
     {
     name: "Nina",
     challenges: [
-      "1. Memperagakan wajah imut youtuber bernama "robi" sambil memperkenalkan nama, prodi dan kelompok mana dan juga persis mengikuti nada yang sama seperti yotuber robi",
+      "1. Memperagakan wajah imut youtuber bernama \"robi\" sambil memperkenalkan nama, prodi dan kelompok mana dan juga persis mengikuti nada yang sama seperti yotuber robi",
       "2. Foto dengan pose absurd, up ig story",
       "3. Telepon teman/orang terdekat dengan nada bayi",
     ],
