@@ -16,6 +16,46 @@ const PANITIA = [
       "3. buat review bintang 5 untuk udara yang sedang kamu hirup.",
     ],
   },
+    {
+    name: "Diphda",
+    challenges: [
+      "1. Mind Twist, Maba akan diberi statement atau pertanyaan dengan berbagai logical fallacy dimana nanti mereka akan dilatih menjawab kenapa statement/pertanyaan ini salah secara logika atau ngga dan kenapa",
+      "2. Ceritakan momen paling memalukan selama hidup",
+      "3. Cosplay jadi MC dadakan buat acara penutupan",
+    ],
+  },
+    {
+    name: "Nina",
+    challenges: [
+      "1. Memperagakan wajah imut youtuber bernama "robi" sambil memperkenalkan nama, prodi dan kelompok mana dan juga persis mengikuti nada yang sama seperti yotuber robi",
+      "2. Foto dengan pose absurd, up ig story",
+      "3. Telepon teman/orang terdekat dengan nada bayi",
+    ],
+  },
+    {
+    name: "Rara",
+    challenges: [
+      "1. Maba harus membuat wajah yang unik dan mirip seperti bang windah lalu di bandingkan lewat video/foto, ",
+      "2. Maba juga wajib memperagakan yel-yel kopdes yang bang windah buat dan ulangi selama 2x gerakan",
+      "3. Ajak teman beda kelompok sign in untuk foto dengan gaya konyol lalu up ig story",
+    ],
+  },
+  {
+    name: "Yosafat",
+    challenges: [
+      "1. Kasih pujian random ke teman beda kelompok sign in",
+      "2. Tebak nama panitia lain dalam waktu 10 detik, minimal 4 panitia",
+      "3. Jalan catwalk dengan memasang muka savage/sombong",
+    ],
+  },
+    {
+    name: "Alsa",
+    challenges: [
+      "1. Membuat gaya spider man dengan seluruh tubuh bergerak, dan bisa couple dan bisa trio , maksimal hanya 3 orang saja dan setiap challange akan di foto mabanya sebagai bukti",
+      "2. Bikin konten/video sama stranger",
+      "3. Foto gaya meme di tempat umum",
+    ],
+  },
   {
     name: "Clea",
     challenges: [
