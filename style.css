@@ -313,6 +313,18 @@ body {
   background: var(--coral);
 }
 
+.ticket__list li.is-used:not(.is-picked) {
+  opacity: 0.5;
+}
+
+.ticket__list li.is-used:not(.is-picked)::after {
+  content: "· sudah pernah keluar";
+  font-size: 11px;
+  color: var(--slate);
+  margin-left: 6px;
+  font-style: italic;
+}
+
 /* ---------- History ---------- */
 
 .history-section {
