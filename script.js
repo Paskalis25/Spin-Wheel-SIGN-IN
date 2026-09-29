@@ -26,10 +26,11 @@ let activePanitia = null;
 let isRolling = false;
 let highlightedIndex = -1;
 let visibleMatches = [];
+let usedIndices = []; // index challenge yang sudah pernah keluar untuk panitia yang aktif saat ini
 
-function saveState(name, resultIndex) {
+function saveState(name, resultIndex, usedIdx) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, resultIndex }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, resultIndex, usedIndices: usedIdx || [] }));
   } catch (e) {
     // localStorage tidak tersedia (mis. private browsing) - abaikan saja
   }
@@ -181,6 +182,7 @@ function init() {
     const match = PANITIA.find((p) => p.name === saved.name);
     if (match) {
       activePanitia = match;
+      usedIndices = Array.isArray(saved.usedIndices) ? saved.usedIndices : [];
       searchInput.value = match.name;
       emptyStateEl.hidden = true;
       renderPanel(saved.resultIndex);
@@ -264,10 +266,21 @@ function selectPanitia(panitia) {
   activePanitia = panitia;
   searchInput.value = panitia.name;
   closeDropdown();
-
   emptyStateEl.hidden = true;
-  saveState(panitia.name, null);
-  renderPanel(null);
+
+  // kalau nama ini sama dengan yang tersimpan sebelumnya, lanjutkan progres lamanya
+  // (jangan reset "sudah pernah keluar"-nya). Kalau beda nama, mulai bersih.
+  const saved = loadState();
+  let existingResultIndex = null;
+  if (saved && saved.name === panitia.name) {
+    usedIndices = Array.isArray(saved.usedIndices) ? saved.usedIndices : [];
+    existingResultIndex = saved.resultIndex;
+  } else {
+    usedIndices = [];
+  }
+
+  saveState(panitia.name, existingResultIndex, usedIndices);
+  renderPanel(existingResultIndex);
 }
 
 function renderPanel(existingResultIndex) {
@@ -288,7 +301,8 @@ function renderPanel(existingResultIndex) {
       <ul class="ticket__list" id="challenge-list">
         ${activePanitia.challenges
           .map(
-            (c, i) => `<li data-index="${i}"><span class="ticket__list-dot"></span>${escapeHtml(c)}</li>`
+            (c, i) =>
+              `<li data-index="${i}"${usedIndices.includes(i) ? ' class="is-used"' : ""}><span class="ticket__list-dot"></span>${escapeHtml(c)}</li>`
           )
           .join("")}
       </ul>
@@ -312,8 +326,11 @@ function showSavedResult(index) {
   resultEl.innerHTML = `<span class="ticket__result-text">${escapeHtml(finalText)}</span>`;
   resultEl.classList.add("ticket__result--done");
 
-  const picked = document.querySelector(`#challenge-list li[data-index="${index}"]`);
-  if (picked) picked.classList.add("is-picked");
+  document.querySelectorAll("#challenge-list li").forEach((li) => {
+    const liIndex = Number(li.dataset.index);
+    li.classList.toggle("is-used", usedIndices.includes(liIndex));
+    li.classList.toggle("is-picked", liIndex === index);
+  });
 
   btn.textContent = "Roll Ulang";
 }
@@ -333,7 +350,15 @@ function handleRoll() {
   resultEl.classList.remove("ticket__result--done");
 
   const challenges = activePanitia.challenges;
-  const finalIndex = Math.floor(Math.random() * challenges.length);
+
+  // pilih hanya dari challenge yang BELUM pernah keluar untuk panitia ini.
+  // kalau semua sudah pernah keluar (usedIndices penuh), reset dan mulai lagi dari 3-3nya.
+  let availableIndices = challenges.map((_, i) => i).filter((i) => !usedIndices.includes(i));
+  if (availableIndices.length === 0) {
+    usedIndices = [];
+    availableIndices = challenges.map((_, i) => i);
+  }
+  const finalIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
 
   let tick = 0;
   const totalTicks = 18; // makin besar = makin lama muternya
@@ -362,15 +387,20 @@ function handleRoll() {
     resultEl.innerHTML = `<span class="ticket__result-text">${escapeHtml(finalText)}</span>`;
     resultEl.classList.add("ticket__result--done");
 
-    const picked = document.querySelector(`#challenge-list li[data-index="${index}"]`);
-    if (picked) picked.classList.add("is-picked");
+    if (!usedIndices.includes(index)) usedIndices.push(index);
+
+    document.querySelectorAll("#challenge-list li").forEach((li) => {
+      const liIndex = Number(li.dataset.index);
+      li.classList.toggle("is-used", usedIndices.includes(liIndex));
+      li.classList.toggle("is-picked", liIndex === index);
+    });
 
     btn.disabled = false;
     btn.textContent = "Roll Ulang";
     isRolling = false;
     searchInput.disabled = false;
 
-    saveState(activePanitia.name, index);
+    saveState(activePanitia.name, index, usedIndices);
     addHistoryEntry(activePanitia.name, finalText);
   }
 
