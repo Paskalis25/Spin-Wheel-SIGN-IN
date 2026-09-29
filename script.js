@@ -302,7 +302,7 @@ function renderPanel(existingResultIndex) {
         ${activePanitia.challenges
           .map(
             (c, i) =>
-              `<li data-index="${i}"${usedIndices.includes(i) ? ' class="is-used"' : ""}><span class="ticket__list-dot"></span>${escapeHtml(c)}</li>`
+              `<li data-index="${i}"><span class="ticket__list-dot"></span>${escapeHtml(c)}</li>`
           )
           .join("")}
       </ul>
@@ -328,7 +328,6 @@ function showSavedResult(index) {
 
   document.querySelectorAll("#challenge-list li").forEach((li) => {
     const liIndex = Number(li.dataset.index);
-    li.classList.toggle("is-used", usedIndices.includes(liIndex));
     li.classList.toggle("is-picked", liIndex === index);
   });
 
@@ -391,7 +390,6 @@ function handleRoll() {
 
     document.querySelectorAll("#challenge-list li").forEach((li) => {
       const liIndex = Number(li.dataset.index);
-      li.classList.toggle("is-used", usedIndices.includes(liIndex));
       li.classList.toggle("is-picked", liIndex === index);
     });
 
