@@ -1,4 +1,4 @@
-const PANITIA = [
+const ENCODED_PANITIA = [
   {
     name: "Afandi",
     challenges: [
